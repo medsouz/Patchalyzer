@@ -260,4 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 
-Tests/ExampleProject/out.json
+Tests/ExampleRepo/

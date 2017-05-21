@@ -8,4 +8,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Semver">
+      <HintPath>..\..\..\..\.nuget\packages\semver\2.0.4\lib\netstandard1.1\Semver.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
