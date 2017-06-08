@@ -27,5 +27,24 @@ namespace PatchalyzerCore.Config.Repository
         /// Collection of files involved in the release
         /// </summary>
         public List<RepoFile> Files;
+
+
+        public bool HasFile(string path, string checksum)
+        {
+            foreach(RepoFile file in Files)
+                if (file.Path == path && file.Checksum == checksum)
+                    return true;
+
+            return false;
+        }
+
+        public RepoFile GetFile(string path)
+        {
+            foreach (RepoFile file in Files)
+                if (file.Path == path)
+                    return file;
+
+            return null;
+        }
     }
 }

@@ -18,5 +18,9 @@
         /// Checksum of the file the is applied to. Can be null.
         /// </summary>
         public string PatchSourceChecksum;
+        /// <summary>
+        /// Used to conserve space in the repository by not storing duplicate files.
+        /// </summary>
+        public string UnchangedSince;
     }
 }

@@ -38,7 +38,7 @@ namespace PatchalyzerCore.Builder
             List<RepoFile> files = new List<RepoFile>();
 
             if (isUpdate)
-                files = AddFiles(repoPath, version, path, Path.Combine(repoPath, config.LatestVersion));
+                files = AddFiles(repoPath, version, path, config.LatestVersion, config.Versions[config.LatestVersion]);
             else
                 files = AddFiles(repoPath, version, path);
 
@@ -47,8 +47,12 @@ namespace PatchalyzerCore.Builder
             return repoVersion;
         }
 
-        private static List<RepoFile> AddFiles(string repoPath, SemVersion version, string path, string previousVersionPath = null)
+        private static List<RepoFile> AddFiles(string repoPath, SemVersion version, string path, string previousVersionNumber = null, RepoVersion previousVersion = null)
         {
+            string previousVersionPath = null;
+            if (previousVersionNumber != null)
+                previousVersionPath = Path.Combine(repoPath, previousVersionNumber);
+
             Console.WriteLine("Adding files from " + path + ((previousVersionPath != null) ? " | Comparing them to: " + previousVersionPath : ""));
             List<RepoFile> files = new List<RepoFile>();
 
@@ -64,29 +68,64 @@ namespace PatchalyzerCore.Builder
                 };
 
                 string exportPath = Path.Combine(repoPath, version.ToString(), repoFile.Path);
-                Directory.CreateDirectory(Path.GetDirectoryName(exportPath));
 
-                File.Copy(file, exportPath);
-
-                // Generate patches
-                if (previousVersionPath != null)
+                if (previousVersion != null)
                 {
-                    var prevPath = Path.Combine(previousVersionPath, repoFile.Path);
-                    if (File.Exists(prevPath))
+                    var oldRepoFile = previousVersion.GetFile(repoFile.Path);
+
+                    if (oldRepoFile?.Checksum == repoFile.Checksum)
                     {
-                        var origChecksum = Checksum.GetSHA1Sum(prevPath);
-                        // Don't generate a patch for an unchanged file
-                        if (origChecksum != repoFile.Checksum)
+                        // Flag the file as unchanged to consolidate repo space
+                        repoFile.UnchangedSince = oldRepoFile.UnchangedSince ?? previousVersionNumber;
+                    }
+                    else
+                    {
+                        Console.WriteLine("\tAdding file " + repoFile.Path);
+
+                        // Copy the entire file if a previous version doesn't exist.
+                        Directory.CreateDirectory(Path.GetDirectoryName(exportPath));
+                        File.Copy(file, exportPath);
+
+                        // Generate patches
+                        string prevPath;
+                        if (oldRepoFile?.UnchangedSince != null)
                         {
-                            repoFile.PatchSourceChecksum = origChecksum;
-                            // Create the BsDiff patch
-                            using (FileStream patchFileStream = new FileStream(exportPath + ".patch", FileMode.Create))
-                                BsDiff.Create(File.ReadAllBytes(exportPath), File.ReadAllBytes(prevPath), patchFileStream);
-                            // Get checksum of the patch
-                            repoFile.PatchChecksum = Checksum.GetSHA1Sum(exportPath + ".patch");
+                            Console.WriteLine("\t\tUnchanged since " + oldRepoFile.UnchangedSince);
+                            prevPath = Path.Combine(Path.Combine(repoPath, oldRepoFile.UnchangedSince), repoFile.Path);
+                        }
+                        else
+                        {
+                            prevPath = Path.Combine(previousVersionPath, repoFile.Path);
+                        }
+
+                        if (File.Exists(prevPath))
+                        {
+                            var origChecksum = Checksum.GetSHA1Sum(prevPath);
+                            // Don't generate a patch for an unchanged file
+                            if (origChecksum != repoFile.Checksum)
+                            {
+                                Console.WriteLine("\t\tGenerating patch...");
+
+                                repoFile.PatchSourceChecksum = origChecksum;
+                                // Create the BsDiff patch
+                                using (FileStream patchFileStream =
+                                    new FileStream(exportPath + ".patch", FileMode.Create))
+                                    BsDiff.Create(File.ReadAllBytes(exportPath), File.ReadAllBytes(prevPath),
+                                        patchFileStream);
+                                // Get checksum of the patch
+                                repoFile.PatchChecksum = Checksum.GetSHA1Sum(exportPath + ".patch");
+                            }
                         }
                     }
                 }
+                else
+                {
+                    Console.WriteLine("\tAdding file " + repoFile.Path);
+                    // Copy the entire file if a previous version doesn't exist.
+                    Directory.CreateDirectory(Path.GetDirectoryName(exportPath));
+                    File.Copy(file, exportPath);
+                }
+
 
                 files.Add(repoFile);
             }
