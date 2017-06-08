@@ -19,7 +19,7 @@ namespace PatchalyzerCore
         /// <param name="repoPath">Path to the repository</param>
         public Patchalyzer(string repoPath)
         {
-            LoadRepo(repoPath, RepoConfig.LoadJSON(Path.Combine(Path.GetFullPath(RepoPath), "patchalyzer.json")));
+            LoadRepo(repoPath, RepoConfig.LoadJSON(Path.Combine(Path.GetFullPath(repoPath), "patchalyzer.json")));
         }
 
         /// <summary>
@@ -40,6 +40,10 @@ namespace PatchalyzerCore
         /// <returns>The newly created Patchalyzer project.</returns>
         public static Patchalyzer InitRepo(string repoPath, string projectName)
         {
+            // If the repo already exists then return that
+            if (File.Exists(Path.Combine(Path.GetFullPath(repoPath), "patchalyzer.json")))
+                return new Patchalyzer(repoPath);
+
             RepoConfig config = new RepoConfig
             {
                 Name = projectName,
@@ -64,11 +68,18 @@ namespace PatchalyzerCore
 
             JsonSerializer serializer = new JsonSerializer
             {
-                Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
             };
 
             using (StreamWriter sw = new StreamWriter(File.Create(Path.Combine(Path.GetFullPath(RepoPath), "patchalyzer.json"))))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, Config);
+            }
+
+            //TODO: Remove later
+            serializer.Formatting = Formatting.Indented;
+            using (StreamWriter sw = new StreamWriter(File.Create(Path.Combine(Path.GetFullPath(RepoPath), "patchalyzer.pretty.json"))))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 serializer.Serialize(writer, Config);
@@ -80,8 +91,15 @@ namespace PatchalyzerCore
             if(Config.Versions == null)
                 Config.Versions = new Dictionary<string, RepoVersion>();
 
-            Config.Versions[version.ToString()] = RepoVersionBuilder.Build(this, version, path, name, changelog, releaseDate);
-            Config.LatestVersion = version.ToString();
+            if (Config.Versions.ContainsKey(version.ToString()))
+            {
+                Console.WriteLine(version + " already exists!");
+            }
+            else
+            {
+                Config.Versions[version.ToString()] = RepoVersionBuilder.Build(this, version, path, name, changelog, releaseDate);
+                Config.LatestVersion = version.ToString();
+            }
         }
 
         public string GetRepoPath()

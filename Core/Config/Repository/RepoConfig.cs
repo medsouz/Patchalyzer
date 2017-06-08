@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace PatchalyzerCore.Config.Repository
@@ -24,7 +25,7 @@ namespace PatchalyzerCore.Config.Repository
 
         public static RepoConfig LoadJSON(string json)
         {
-           return JsonConvert.DeserializeObject<RepoConfig>(json);
+            return JsonConvert.DeserializeObject<RepoConfig>(File.ReadAllText(json));
         }
     }
 }
