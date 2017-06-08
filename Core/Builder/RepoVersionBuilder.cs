@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using deltaq.BsDiff;
 using PatchalyzerCore.Config.Repository;
 using PatchalyzerCore.IO;
 using Semver;
@@ -48,7 +49,7 @@ namespace PatchalyzerCore.Builder
 
         private static List<RepoFile> AddFiles(string repoPath, SemVersion version, string path, string previousVersionPath = null)
         {
-            Console.WriteLine("Adding files from " + path + " | Comparing them to: " + previousVersionPath);
+            Console.WriteLine("Adding files from " + path + ((previousVersionPath != null) ? " | Comparing them to: " + previousVersionPath : ""));
             List<RepoFile> files = new List<RepoFile>();
 
             var fileList = new List<string>();
@@ -78,9 +79,11 @@ namespace PatchalyzerCore.Builder
                         if (origChecksum != repoFile.Checksum)
                         {
                             repoFile.PatchSourceChecksum = origChecksum;
-                            repoFile.PatchChecksum = "TODO";
-                            //TODO: Generate an actual patch instead of an empty file
-                            File.Create(exportPath + ".patch");
+                            // Create the BsDiff patch
+                            using (FileStream patchFileStream = new FileStream(exportPath + ".patch", FileMode.Create))
+                                BsDiff.Create(File.ReadAllBytes(exportPath), File.ReadAllBytes(prevPath), patchFileStream);
+                            // Get checksum of the patch
+                            repoFile.PatchChecksum = Checksum.GetSHA1Sum(exportPath + ".patch");
                         }
                     }
                 }
