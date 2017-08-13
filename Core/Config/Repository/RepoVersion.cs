@@ -27,6 +27,10 @@ namespace PatchalyzerCore.Config.Repository
         /// Collection of files involved in the release
         /// </summary>
         public List<RepoFile> Files;
+        /// <summary>
+        /// List of files that have been deleted from the previous version
+        /// </summary>
+        public List<string> DeletedFiles;
 
 
         public bool HasFile(string path, string checksum)

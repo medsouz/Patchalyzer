@@ -35,14 +35,8 @@ namespace PatchalyzerCore.Builder
                     isUpdate = (latestVersion < version);
             }
 
-            List<RepoFile> files = new List<RepoFile>();
-
-            if (isUpdate)
-                files = AddFiles(repoPath, version, path, config.LatestVersion, config.Versions[config.LatestVersion]);
-            else
-                files = AddFiles(repoPath, version, path);
-
-            repoVersion.Files = files;
+            repoVersion.Files = isUpdate ? AddFiles(repoPath, version, path, config.LatestVersion, config.Versions[config.LatestVersion]) : AddFiles(repoPath, version, path);
+            repoVersion.DeletedFiles = isUpdate ? GetDeletedFiles(repoVersion.Files, config.Versions[config.LatestVersion].Files) : new List<string>();
 
             return repoVersion;
         }
@@ -141,6 +135,32 @@ namespace PatchalyzerCore.Builder
             var directories = Directory.GetDirectories(root);
             foreach (var directory in directories)
                 GetFiles(directory, ref fileList);
+        }
+
+        public static List<string> GetDeletedFiles(List<RepoFile> files, List<RepoFile> oldFiles)
+        {
+            List<string> deletedFiles = new List<string>();
+
+            foreach (var oldFile in oldFiles)
+            {
+                bool isDeleted = true;
+                foreach (var newFile in files)
+                {
+                    if (newFile.Path == oldFile.Path)
+                    {
+                        isDeleted = false;
+                        break;
+                    }
+                }
+
+                if (isDeleted)
+                {
+                    Console.WriteLine("\tDeleting file " + oldFile.Path);
+                    deletedFiles.Add(oldFile.Path);
+                }
+            }
+
+            return deletedFiles;
         }
     }
 }
