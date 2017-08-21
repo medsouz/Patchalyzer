@@ -13,7 +13,7 @@ namespace PatchalyzerConsoleClient
     {
         static void Main(string[] args)
         {
-            if(Directory.Exists("..//Tests//ExampleRepo//"))
+            if (Directory.Exists("..//Tests//ExampleRepo//"))
                 Directory.Delete("..//Tests//ExampleRepo//", true);
 
             Patchalyzer proj = Patchalyzer.InitRepo("..//Tests//ExampleRepo//", "ExampleRepo");

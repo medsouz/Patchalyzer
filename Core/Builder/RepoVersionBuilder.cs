@@ -51,7 +51,7 @@ namespace PatchalyzerCore.Builder
             List<RepoFile> files = new List<RepoFile>();
 
             var fileList = new List<string>();
-            GetFiles(path, ref fileList);
+            FileUtil.GetFiles(path, ref fileList);
 
             foreach (var file in fileList)
             {
@@ -125,16 +125,6 @@ namespace PatchalyzerCore.Builder
             }
 
             return files;
-        }
-
-        private static void GetFiles(string root, ref List<string> fileList)
-        {
-            string[] files = Directory.GetFiles(root);
-            fileList.AddRange(files);
-
-            var directories = Directory.GetDirectories(root);
-            foreach (var directory in directories)
-                GetFiles(directory, ref fileList);
         }
 
         public static List<string> GetDeletedFiles(List<RepoFile> files, List<RepoFile> oldFiles)
