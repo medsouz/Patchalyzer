@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.12
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatchalyzerCore", "Core\PatchalyzerCore.csproj", "{AA11DAE3-86C1-4AED-9FB8-A35A6B27105B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatchalyzerConsoleClient", "ConsoleClient\PatchalyzerConsoleClient.csproj", "{E8CDD4E0-31F6-4B52-B079-13F08F1FAB24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatchalyzerConsoleClient", "ConsoleClient\PatchalyzerConsoleClient.csproj", "{E8CDD4E0-31F6-4B52-B079-13F08F1FAB24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +24,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {86D59F5B-BE39-4FBD-8F27-92FEC81279BC}
 	EndGlobalSection
 EndGlobal
